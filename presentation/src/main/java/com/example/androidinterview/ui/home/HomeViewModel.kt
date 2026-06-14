@@ -33,9 +33,9 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             combine(merchant, networkError) { merchant, networkError ->
                 when {
-                    (networkError != null) -> HomeUiState.Error(networkError)
-                    (merchant == null) -> HomeUiState.Loading
-                    else -> HomeUiState.Success(uiModelMapper(merchant))
+                    networkError != null -> HomeUiState.Error(networkError)
+                    merchant == null -> HomeUiState.Loading
+                    else -> HomeUiState.Success(data = uiModelMapper(merchant), merchant = merchant)
                 }
             }.collect {
                 _uiState.value = it

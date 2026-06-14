@@ -26,10 +26,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.androidinterview.domain.model.Merchant
 
 @Composable
 fun HomeScreen(
-    onShowMore: () -> Unit,
+    onShowMore: (Merchant) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
@@ -38,7 +39,11 @@ fun HomeScreen(
     when (val state = uiState) {
         is HomeUiState.Loading -> LoadingContent(modifier = modifier)
         is HomeUiState.Error -> ErrorContent(modifier = modifier, message = state.message, onRetry = viewModel::loadData)
-        is HomeUiState.Success -> MerchantContent(modifier = modifier, data = state.data, onShowMore = onShowMore)
+        is HomeUiState.Success -> MerchantContent(
+            modifier = modifier,
+            data = state.data,
+            onShowMore = { onShowMore(state.merchant) },
+        )
     }
 }
 

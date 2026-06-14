@@ -1,5 +1,8 @@
 package com.example.androidinterview.domain.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Merchant(
     val availableBalance: Int,
     val pendingBalance: Int,
@@ -7,6 +10,7 @@ data class Merchant(
     val activity: List<Activity>,
 )
 
+@Serializable
 data class Activity(
     val id: String,
     val type: ActivityType,
@@ -17,6 +21,6 @@ data class Activity(
     val status: ActivityStatus,
 )
 
-enum class Currency { GBP, EUR }
-enum class ActivityType { PAYOUT, DEPOSIT, REFUND, FEE }
-enum class ActivityStatus { COMPLETED, PENDING, PROCESSING, FAILED }
+@Serializable enum class Currency { GBP, EUR }
+@Serializable enum class ActivityType { PAYOUT, DEPOSIT, REFUND, FEE }
+@Serializable enum class ActivityStatus { COMPLETED, PENDING, PROCESSING, FAILED }

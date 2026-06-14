@@ -1,6 +1,5 @@
 package com.example.androidinterview.ui.activity
 
-import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,22 +24,24 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.androidinterview.ui.home.HomeUiState
-import com.example.androidinterview.ui.home.HomeViewModel
+import com.example.androidinterview.domain.model.Merchant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ActivityScreen(
+    merchant: Merchant,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: HomeViewModel = hiltViewModel(LocalContext.current as ComponentActivity),
+    viewModel: ActivityViewModel = hiltViewModel<ActivityViewModel, ActivityViewModelFactory>(
+        creationCallback = { factory -> factory.create(merchant) },
+    ),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val items = (uiState as? ActivityUiState.Success)?.items.orEmpty()
 
     Scaffold(
         modifier = modifier,
@@ -55,7 +56,6 @@ fun ActivityScreen(
             )
         },
     ) { padding ->
-        val items = (uiState as? HomeUiState.Success)?.data?.allActivity.orEmpty()
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -72,7 +72,7 @@ fun ActivityScreen(
 }
 
 @Composable
-private fun ActivityRow(item: HomeUiState.Success.BusinessData.Line) {
+private fun ActivityRow(item: ActivityUiState.Success.Item) {
     val amountColor = if (item.valueNegative) MaterialTheme.colorScheme.error else Color(0xFF2E7D32)
     Row(
         modifier = Modifier

@@ -39,12 +39,15 @@ class MainActivity : ComponentActivity() {
                             Scaffold(modifier = Modifier.fillMaxSize()) { padding ->
                                 HomeScreen(
                                     modifier = Modifier.padding(padding),
-                                    onShowMore = { backStack.add(ActivityDestination) },
+                                    onShowMore = { merchant ->
+                                        backStack.add(ActivityDestination(merchant))
+                                    },
                                 )
                             }
                         }
-                        entry<ActivityDestination> {
+                        entry<ActivityDestination> { key ->
                             ActivityScreen(
+                                merchant = key.merchant,
                                 onBack = { backStack.removeLastOrNull() },
                             )
                         }
