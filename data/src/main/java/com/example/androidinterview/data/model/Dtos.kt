@@ -1,32 +1,46 @@
 package com.example.androidinterview.data.model
 
+import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal enum class CurrencyDto { GBP, EUR }
+internal enum class CurrencyDto {
+    @SerialName("GBP") GBP,
+    @SerialName("EUR") EUR,
+}
 
 @Serializable
-internal enum class ActivityTypeDto { payout, deposit, refund, fee }
+internal enum class ActivityTypeDto {
+    @SerialName("payout") PAYOUT,
+    @SerialName("deposit") DEPOSIT,
+    @SerialName("refund") REFUND,
+    @SerialName("fee") FEE,
+}
 
 @Serializable
-internal enum class ActivityStatusDto { completed, pending, processing, failed }
+internal enum class ActivityStatusDto {
+    @SerialName("completed") COMPLETED,
+    @SerialName("pending") PENDING,
+    @SerialName("processing") PROCESSING,
+    @SerialName("failed") FAILED,
+}
 
 @Serializable
 internal data class ActivityItemDto(
-    val id: String,
-    val type: ActivityTypeDto,
-    val amount: Int,
-    val currency: CurrencyDto,
-    val date: String,
-    val description: String,
-    val status: ActivityStatusDto,
+    @SerialName("id") val id: String,
+    @SerialName("type") val type: ActivityTypeDto,
+    @SerialName("amount") val amount: Int,
+    @SerialName("currency") val currency: CurrencyDto,
+    @SerialName("date") val date: String,
+    @SerialName("description") val description: String,
+    @SerialName("status") val status: ActivityStatusDto,
 )
 
 @Serializable
 internal data class MerchantDto(
     @SerialName("available_balance") val availableBalance: Int,
     @SerialName("pending_balance") val pendingBalance: Int,
-    val currency: CurrencyDto,
-    val activity: List<ActivityItemDto>,
+    @SerialName("currency") val currency: CurrencyDto,
+    @SerialName("activity") val activity: List<ActivityItemDto>,
 )

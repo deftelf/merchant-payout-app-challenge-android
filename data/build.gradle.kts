@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.example.androidinterview.data"
-    compileSdk = 36
+    compileSdk = 37
     defaultConfig {
         minSdk = 34
     }

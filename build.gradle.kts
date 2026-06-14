@@ -9,3 +9,15 @@ plugins {
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.hilt) apply false
 }
+
+// Hilt 2.59.2 ships kotlin-metadata-jvm capped at metadata 2.3.0; Kotlin 2.4.0 generates
+// metadata 2.4.0. Force the dependency up so Hilt can process our classes.
+subprojects {
+    configurations.all {
+        resolutionStrategy.eachDependency {
+            if (requested.group == "org.jetbrains.kotlin" && requested.name == "kotlin-metadata-jvm") {
+                useVersion("2.4.0")
+            }
+        }
+    }
+}

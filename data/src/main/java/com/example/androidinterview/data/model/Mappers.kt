@@ -29,15 +29,15 @@ internal fun CurrencyDto.toDomain() = when (this) {
 }
 
 internal fun ActivityTypeDto.toDomain() = when (this) {
-    ActivityTypeDto.payout  -> ActivityType.PAYOUT
-    ActivityTypeDto.deposit -> ActivityType.DEPOSIT
-    ActivityTypeDto.refund  -> ActivityType.REFUND
-    ActivityTypeDto.fee     -> ActivityType.FEE
+    ActivityTypeDto.PAYOUT  -> ActivityType.PAYOUT
+    ActivityTypeDto.DEPOSIT -> ActivityType.DEPOSIT
+    ActivityTypeDto.REFUND  -> ActivityType.REFUND
+    ActivityTypeDto.FEE     -> ActivityType.FEE
 }
 
 internal fun ActivityStatusDto.toDomain() = when (this) {
-    ActivityStatusDto.completed  -> ActivityStatus.COMPLETED
-    ActivityStatusDto.pending    -> ActivityStatus.PENDING
-    ActivityStatusDto.processing -> ActivityStatus.PROCESSING
-    ActivityStatusDto.failed     -> ActivityStatus.FAILED
+    ActivityStatusDto.COMPLETED  -> ActivityStatus.COMPLETED
+    ActivityStatusDto.PENDING    -> ActivityStatus.PENDING
+    ActivityStatusDto.PROCESSING -> ActivityStatus.PROCESSING
+    ActivityStatusDto.FAILED     -> ActivityStatus.FAILED
 }
