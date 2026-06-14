@@ -32,15 +32,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.androidinterview.data.model.ActivityItem
-import com.example.androidinterview.data.model.MerchantData
-import com.example.androidinterview.data.model.formatAmount
-import com.example.androidinterview.data.model.symbol
+import com.example.androidinterview.domain.model.Activity
+import com.example.androidinterview.domain.model.Merchant
+import com.example.androidinterview.domain.util.formatAmount
+import com.example.androidinterview.domain.util.symbol
 
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel = viewModel()) {
+fun HomeScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     when (val state = uiState) {
@@ -72,7 +72,7 @@ private fun ErrorContent(modifier: Modifier = Modifier, message: String, onRetry
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun MerchantContent(modifier: Modifier = Modifier, data: MerchantData) {
+private fun MerchantContent(modifier: Modifier = Modifier, data: Merchant) {
     var showModal by remember { mutableStateOf(false) }
 
     Column(
@@ -101,7 +101,7 @@ private fun MerchantContent(modifier: Modifier = Modifier, data: MerchantData) {
 }
 
 @Composable
-private fun BalanceCard(data: MerchantData) {
+private fun BalanceCard(data: Merchant) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -115,12 +115,12 @@ private fun BalanceCard(data: MerchantData) {
             Spacer(modifier = Modifier.height(16.dp))
             BalanceRow(
                 label = "Available Balance",
-                amount = formatAmount(data.currency, data.available_balance).removePrefix("+"),
+                amount = formatAmount(data.currency, data.availableBalance).removePrefix("+"),
             )
             Spacer(modifier = Modifier.height(8.dp))
             BalanceRow(
                 label = "Pending Balance",
-                amount = formatAmount(data.currency, data.pending_balance).removePrefix("+"),
+                amount = formatAmount(data.currency, data.pendingBalance).removePrefix("+"),
             )
         }
     }
@@ -138,7 +138,7 @@ private fun BalanceRow(label: String, amount: String) {
 }
 
 @Composable
-private fun RecentActivitySection(activity: List<ActivityItem>, onShowMore: () -> Unit) {
+private fun RecentActivitySection(activity: List<Activity>, onShowMore: () -> Unit) {
     Column {
         Text(
             text = "Recent Activity",
@@ -161,7 +161,7 @@ private fun RecentActivitySection(activity: List<ActivityItem>, onShowMore: () -
 }
 
 @Composable
-private fun ActivityModal(activity: List<ActivityItem>) {
+private fun ActivityModal(activity: List<Activity>) {
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
         Text(
             text = "All Activity",
@@ -180,7 +180,7 @@ private fun ActivityModal(activity: List<ActivityItem>) {
 }
 
 @Composable
-private fun ActivityRow(item: ActivityItem) {
+private fun ActivityRow(item: Activity) {
     val amountColor = if (item.amount >= 0) Color(0xFF2E7D32) else MaterialTheme.colorScheme.error
     Row(
         modifier = Modifier

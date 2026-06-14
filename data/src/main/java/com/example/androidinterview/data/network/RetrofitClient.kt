@@ -8,7 +8,7 @@ import retrofit2.Retrofit
 
 private val json = Json { ignoreUnknownKeys = true }
 
-object RetrofitClient {
+internal object RetrofitClient {
     val merchantApi: MerchantApi by lazy {
         Retrofit.Builder()
             .baseUrl(MockServerManager.baseUrl)
