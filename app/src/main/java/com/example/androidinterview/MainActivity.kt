@@ -8,6 +8,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.navigation3.ui.NavDisplay
+import com.example.androidinterview.ui.ActivityDestination
+import com.example.androidinterview.ui.HomeDestination
+import com.example.androidinterview.ui.activity.ActivityScreen
 import com.example.androidinterview.ui.home.HomeScreen
 import com.example.androidinterview.ui.theme.AndroidInterviewTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -18,10 +25,31 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            val backStack = rememberNavBackStack(HomeDestination)
+
             AndroidInterviewTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    HomeScreen(modifier = Modifier.padding(innerPadding))
-                }
+                NavDisplay(
+                    backStack = backStack,
+                    onBack = { backStack.removeLastOrNull() },
+                    entryDecorators = listOf(
+                        rememberSaveableStateHolderNavEntryDecorator(),
+                    ),
+                    entryProvider = entryProvider {
+                        entry<HomeDestination> {
+                            Scaffold(modifier = Modifier.fillMaxSize()) { padding ->
+                                HomeScreen(
+                                    modifier = Modifier.padding(padding),
+                                    onShowMore = { backStack.add(ActivityDestination) },
+                                )
+                            }
+                        }
+                        entry<ActivityDestination> {
+                            ActivityScreen(
+                                onBack = { backStack.removeLastOrNull() },
+                            )
+                        }
+                    },
+                )
             }
         }
     }

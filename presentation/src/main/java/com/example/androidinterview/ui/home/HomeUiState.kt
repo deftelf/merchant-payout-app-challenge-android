@@ -8,7 +8,8 @@ sealed class HomeUiState {
         data class BusinessData(
             val balanceAvailable: String,
             val balancePending: String,
-            val recentActivity: List<Line>
+            val recentActivity: List<Line>,
+            val allActivity: List<Line>,
         ) {
             data class Line(
                 val description: String,
