@@ -16,6 +16,5 @@ fun formatAmount(currency: Currency, amountPence: Int): String {
         maximumFractionDigits = 2
     }
     val value = abs(amountPence) / 100.0
-    val sign = if (amountPence < 0) "-" else "+"
-    return "$sign${currency.symbol()}${formatter.format(value)}"
+    return "${currency.symbol()}${formatter.format(value)}"
 }

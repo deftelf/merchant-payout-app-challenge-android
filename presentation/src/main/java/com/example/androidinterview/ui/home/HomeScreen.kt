@@ -72,7 +72,7 @@ private fun ErrorContent(modifier: Modifier = Modifier, message: String, onRetry
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun MerchantContent(modifier: Modifier = Modifier, data: Merchant) {
+private fun MerchantContent(modifier: Modifier = Modifier, data: HomeUiState.Success.BusinessData) {
     var showModal by remember { mutableStateOf(false) }
 
     Column(
@@ -84,24 +84,24 @@ private fun MerchantContent(modifier: Modifier = Modifier, data: Merchant) {
         BalanceCard(data = data)
         Spacer(modifier = Modifier.height(24.dp))
         RecentActivitySection(
-            activity = data.activity,
+            activity = data.recentActivity,
             onShowMore = { showModal = true },
         )
     }
 
-    if (showModal) {
-        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-        ModalBottomSheet(
-            onDismissRequest = { showModal = false },
-            sheetState = sheetState,
-        ) {
-            ActivityModal(activity = data.activity)
-        }
-    }
+//    if (showModal) {
+//        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+//        ModalBottomSheet(
+//            onDismissRequest = { showModal = false },
+//            sheetState = sheetState,
+//        ) {
+//            ActivityModal(activity = data.activity)
+//        }
+//    }
 }
 
 @Composable
-private fun BalanceCard(data: Merchant) {
+private fun BalanceCard(data: HomeUiState.Success.BusinessData) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -115,12 +115,12 @@ private fun BalanceCard(data: Merchant) {
             Spacer(modifier = Modifier.height(16.dp))
             BalanceRow(
                 label = "Available Balance",
-                amount = formatAmount(data.currency, data.availableBalance).removePrefix("+"),
+                amount = data.balanceAvailable,
             )
             Spacer(modifier = Modifier.height(8.dp))
             BalanceRow(
                 label = "Pending Balance",
-                amount = formatAmount(data.currency, data.pendingBalance).removePrefix("+"),
+                amount = data.balancePending,
             )
         }
     }
@@ -138,7 +138,7 @@ private fun BalanceRow(label: String, amount: String) {
 }
 
 @Composable
-private fun RecentActivitySection(activity: List<Activity>, onShowMore: () -> Unit) {
+private fun RecentActivitySection(activity: List<HomeUiState.Success.BusinessData.Line>, onShowMore: () -> Unit) {
     Column {
         Text(
             text = "Recent Activity",
@@ -159,29 +159,29 @@ private fun RecentActivitySection(activity: List<Activity>, onShowMore: () -> Un
         }
     }
 }
+//
+//@Composable
+//private fun ActivityModal(activity: List<Activity>) {
+//    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+//        Text(
+//            text = "All Activity",
+//            style = MaterialTheme.typography.titleMedium,
+//            fontWeight = FontWeight.Bold,
+//            modifier = Modifier.padding(bottom = 12.dp),
+//        )
+//        LazyColumn {
+//            items(activity, key = { it.id }) { item ->
+//                ActivityRow(item = item)
+//                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+//            }
+//            item { Spacer(modifier = Modifier.height(32.dp)) }
+//        }
+//    }
+//}
 
 @Composable
-private fun ActivityModal(activity: List<Activity>) {
-    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-        Text(
-            text = "All Activity",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 12.dp),
-        )
-        LazyColumn {
-            items(activity, key = { it.id }) { item ->
-                ActivityRow(item = item)
-                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-            }
-            item { Spacer(modifier = Modifier.height(32.dp)) }
-        }
-    }
-}
-
-@Composable
-private fun ActivityRow(item: Activity) {
-    val amountColor = if (item.amount >= 0) Color(0xFF2E7D32) else MaterialTheme.colorScheme.error
+private fun ActivityRow(item: HomeUiState.Success.BusinessData.Line) {
+    val amountColor = if (item.valueNegative) MaterialTheme.colorScheme.error else Color(0xFF2E7D32)
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -195,7 +195,7 @@ private fun ActivityRow(item: Activity) {
             modifier = Modifier.weight(1f),
         )
         Text(
-            text = formatAmount(item.currency, item.amount),
+            text = item.value,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.SemiBold,
             color = amountColor,
