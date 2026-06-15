@@ -1,5 +1,7 @@
 package com.example.androidinterview.ui.home
 
+import androidx.compose.ui.graphics.Color
+
 sealed class HomeUiState {
     object Loading : HomeUiState()
     data class Success(val data: BusinessData) : HomeUiState() {
@@ -11,7 +13,7 @@ sealed class HomeUiState {
             data class Line(
                 val description: String,
                 val value: String,
-                val valueNegative: Boolean,
+                val valueColor: Color,
             )
         }
     }

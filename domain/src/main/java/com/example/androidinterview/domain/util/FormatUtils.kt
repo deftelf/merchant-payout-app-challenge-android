@@ -15,6 +15,6 @@ fun formatAmount(currency: Currency, amountPence: Int): String {
         minimumFractionDigits = 2
         maximumFractionDigits = 2
     }
-    val value = abs(amountPence) / 100.0
+    val value = amountPence / 100.0
     return "${currency.symbol()}${formatter.format(value)}"
 }

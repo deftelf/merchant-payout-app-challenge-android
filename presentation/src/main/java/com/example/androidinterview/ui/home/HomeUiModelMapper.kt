@@ -1,5 +1,6 @@
 package com.example.androidinterview.ui.home
 
+import androidx.compose.ui.graphics.Color
 import com.example.androidinterview.domain.model.Merchant
 import com.example.androidinterview.domain.util.formatAmount
 import javax.inject.Inject
@@ -16,7 +17,7 @@ class HomeUiModelMapper @Inject constructor() {
                 HomeUiState.Success.BusinessData.Line(
                     description = it.description,
                     value = formatAmount(it.currency, it.amount),
-                    valueNegative = it.amount < 0,
+                    valueColor = if (it.amount < 0) Color.Red else Color(0xFF2E7D32),
                 )
             },
         )

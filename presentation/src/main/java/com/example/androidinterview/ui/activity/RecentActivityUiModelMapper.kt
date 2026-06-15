@@ -1,6 +1,10 @@
 package com.example.androidinterview.ui.activity
 
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.graphics.Color
 import com.example.androidinterview.domain.model.Activity
+import com.example.androidinterview.domain.model.ActivityStatus
+import com.example.androidinterview.domain.model.ActivityType
 import com.example.androidinterview.domain.util.formatAmount
 import com.example.androidinterview.ui.activity.RecentActivityUiState.Success.ActivityGroup
 import com.example.androidinterview.ui.activity.RecentActivityUiState.Success.Item
@@ -13,8 +17,8 @@ import javax.inject.Singleton
 @Singleton
 class RecentActivityUiModelMapper @Inject constructor() {
 
-    private val itemDateFormatter = DateTimeFormatter.ofPattern("dd MM yyyy")
-    private val groupDateFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy")
+    // Spec is unclear, written says "MM" but the reference screenshots are "MMM"
+    private val dateFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy")
 
     operator fun invoke(activities: List<Activity>): List<ActivityGroup> {
         val today = LocalDate.now()
@@ -28,23 +32,35 @@ class RecentActivityUiModelMapper @Inject constructor() {
                     label = when (date) {
                         today -> "Today"
                         yesterday -> "Yesterday"
-                        else -> date.format(groupDateFormatter)
+                        else -> date.format(dateFormatter)
                     },
                     items = items.map { activity ->
                         Item(
                             description = activity.description,
-                            type = activity.type.name.lowercase() // TOOD map properly
-                                .replaceFirstChar { it.uppercase() },
+                            type = activity.type.toDisplayString(),
                             value = formatAmount(activity.currency, activity.amount),
-                            valueNegative = activity.amount < 0,
+                            valueColor = if (activity.amount < 0) Color.Red else Color(0xFF2E7D32),
                             date = ZonedDateTime.parse(activity.date)
                                 .toLocalDate()
-                                .format(itemDateFormatter),
-                            status = activity.status.name.lowercase() // TOOD map properly
-                                .replaceFirstChar { it.uppercase() },
+                                .format(dateFormatter),
+                            status = activity.status.toDisplayString(),
                         )
                     },
                 )
             }
     }
+}
+
+private fun ActivityType.toDisplayString() = when (this) {
+    ActivityType.PAYOUT  -> "Payout"
+    ActivityType.DEPOSIT -> "Deposit"
+    ActivityType.REFUND  -> "Refund"
+    ActivityType.FEE     -> "Fee"
+}
+
+private fun ActivityStatus.toDisplayString() = when (this) {
+    ActivityStatus.COMPLETED  -> "Completed"
+    ActivityStatus.PENDING    -> "Pending"
+    ActivityStatus.PROCESSING -> "Processing"
+    ActivityStatus.FAILED     -> "Failed"
 }

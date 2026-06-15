@@ -1,5 +1,7 @@
 package com.example.androidinterview.ui.activity
 
+import androidx.compose.ui.graphics.Color
+
 sealed class RecentActivityUiState {
     object Loading : RecentActivityUiState()
     data class Error(val message: String) : RecentActivityUiState()
@@ -13,7 +15,7 @@ sealed class RecentActivityUiState {
             val description: String,
             val type: String,
             val value: String,
-            val valueNegative: Boolean,
+            val valueColor: Color,
             val date: String,
             val status: String,
         )

@@ -157,7 +157,6 @@ private fun RecentActivitySection(activity: List<HomeUiState.Success.BusinessDat
 
 @Composable
 private fun ActivityRow(item: HomeUiState.Success.BusinessData.Line) {
-    val amountColor = if (item.valueNegative) MaterialTheme.colorScheme.error else Color(0xFF2E7D32)
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -174,7 +173,7 @@ private fun ActivityRow(item: HomeUiState.Success.BusinessData.Line) {
             text = item.value,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.SemiBold,
-            color = amountColor,
+            color = item.valueColor,
         )
     }
 }

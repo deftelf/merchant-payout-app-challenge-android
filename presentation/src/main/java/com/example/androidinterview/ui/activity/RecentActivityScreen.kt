@@ -62,15 +62,21 @@ fun RecentActivityScreen(
         when (val state = uiState) {
             is RecentActivityUiState.Loading -> {
                 Box(
-                    modifier = Modifier.fillMaxSize().padding(padding),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
                     contentAlignment = Alignment.Center,
                 ) {
                     CircularProgressIndicator()
                 }
             }
+
             is RecentActivityUiState.Error -> {
                 Column(
-                    modifier = Modifier.fillMaxSize().padding(padding).padding(24.dp),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding)
+                        .padding(24.dp),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
@@ -79,6 +85,7 @@ fun RecentActivityScreen(
                     Button(onClick = viewModel::retry) { Text("Retry") }
                 }
             }
+
             is RecentActivityUiState.Success -> SuccessContent(
                 state = state,
                 onLoadMore = viewModel::loadMore,
@@ -108,14 +115,15 @@ private fun SuccessContent(
 
     LazyColumn(
         state = listState,
-        modifier = modifier.fillMaxSize().padding(horizontal = 16.dp),
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp),
     ) {
         state.groups.forEach { group ->
             item(key = "header_${group.label}") {
                 Text(
                     text = group.label,
                     style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 16.dp, bottom = 4.dp),
                 )
             }
@@ -126,11 +134,18 @@ private fun SuccessContent(
         }
         if (state.isLoadingMore) {
             item(key = "loading_more") {
-                Box(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    contentAlignment = Alignment.Center,
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                 ) {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(Modifier.align(Alignment.CenterHorizontally))
+                    Text(
+                        "Loading more...",
+                        color = MaterialTheme.colorScheme.tertiary,
+                        style = MaterialTheme.typography.labelSmall,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
                 }
             }
         }
@@ -140,9 +155,10 @@ private fun SuccessContent(
 
 @Composable
 private fun ActivityRow(item: RecentActivityUiState.Success.Item) {
-    val amountColor = if (item.valueNegative) MaterialTheme.colorScheme.error else Color(0xFF2E7D32)
     Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -150,7 +166,8 @@ private fun ActivityRow(item: RecentActivityUiState.Success.Item) {
             Text(
                 text = item.type,
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold,
             )
             Text(
                 text = item.description,
@@ -159,7 +176,7 @@ private fun ActivityRow(item: RecentActivityUiState.Success.Item) {
             Text(
                 text = item.date,
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = MaterialTheme.colorScheme.tertiary,
             )
         }
         Column(horizontalAlignment = Alignment.End) {
@@ -167,13 +184,13 @@ private fun ActivityRow(item: RecentActivityUiState.Success.Item) {
                 text = item.value,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.SemiBold,
-                color = amountColor,
+                color = item.valueColor,
             )
 
             Text(
                 text = item.status,
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = MaterialTheme.colorScheme.tertiary,
             )
         }
     }
