@@ -30,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -46,6 +47,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
@@ -90,16 +92,22 @@ fun PayoutScreen(
                 onDone = viewModel::onReset,
             )
 
-            is PayoutUiState.Error -> ErrorContent(
-                state = state,
-                onRetry = viewModel::onRetry,
-            )
+            is PayoutUiState.Error -> {
+                val message = when (state) {
+                    is PayoutUiState.Error.InsufficientFunds  -> stringResource(R.string.error_insufficient_funds)
+                    is PayoutUiState.Error.ServiceUnavailable -> stringResource(R.string.error_service_unavailable)
+                    is PayoutUiState.Error.Generic            -> state.message
+                }
+                val buttonLabel = stringResource(R.string.try_again)
+                val onClick: () -> Unit = viewModel::onRetry
+                ErrorContent(message = message, buttonLabel = buttonLabel, onClick = onClick)
+            }
         }
 
         if (uiState is PayoutUiState.Confirming) {
             val state = uiState as PayoutUiState.Confirming
             AlertDialog(
-                onDismissRequest = viewModel::onCancel,
+                onDismissRequest = viewModel::onRetry,
                 title = { Text(stringResource(R.string.payout_confirm_dialog_title)) },
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -112,7 +120,7 @@ fun PayoutScreen(
                     Button(onClick = viewModel::onConfirm) { Text(stringResource(R.string.confirm)) }
                 },
                 dismissButton = {
-                    TextButton(onClick = viewModel::onCancel) { Text(stringResource(R.string.cancel)) }
+                    TextButton(onClick = viewModel::onRetry) { Text(stringResource(R.string.cancel)) }
                 },
             )
         }
@@ -313,7 +321,7 @@ private fun SuccessContent(state: PayoutUiState.Success, onDone: () -> Unit) {
 }
 
 @Composable
-private fun ErrorContent(state: PayoutUiState.Error, onRetry: () -> Unit) {
+private fun ErrorContent(message: String, buttonLabel: String, onClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -321,14 +329,38 @@ private fun ErrorContent(state: PayoutUiState.Error, onRetry: () -> Unit) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(
-            text = state.message,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.error,
+        Icon(
+            imageVector = Icons.Filled.Clear,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.error,
+            modifier = Modifier
+                .padding(bottom = 16.dp)
+                .size(40.dp),
         )
         Spacer(Modifier.height(16.dp))
-        Button(onClick = onRetry, modifier = Modifier.fillMaxWidth()) {
-            Text(stringResource(R.string.try_again))
+        Text(
+            text = stringResource(R.string.error_payout_title),
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.error,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+        )
+        Spacer(Modifier.height(16.dp))
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.error,
+            textAlign = TextAlign.Center,
+        )
+        Spacer(Modifier.height(16.dp))
+        Button(onClick = onClick, shape = RoundedCornerShape(8.dp), modifier = Modifier.fillMaxWidth()) {
+            Text(buttonLabel)
         }
     }
+}
+
+@Preview
+@Composable
+private fun ErrorContentPreview() {
+    ErrorContent("Message", "Label") { }
 }

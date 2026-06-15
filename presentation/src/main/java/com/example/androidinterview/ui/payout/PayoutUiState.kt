@@ -22,5 +22,10 @@ sealed class PayoutUiState {
         val currency: Currency,
         val iban: String,
     ) : PayoutUiState()
-    data class Error(val message: String) : PayoutUiState()
+    sealed class Error : PayoutUiState() {
+        abstract val message: String
+        data class InsufficientFunds(override val message: String) : Error()
+        data class ServiceUnavailable(override val message: String) : Error()
+        data class Generic(override val message: String) : Error()
+    }
 }

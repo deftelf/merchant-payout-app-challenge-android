@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.androidinterview.domain.model.Currency
+import com.example.androidinterview.domain.model.PayoutException
 import com.example.androidinterview.domain.repository.PayoutRepository
 import com.example.androidinterview.domain.util.formatAmount
 import com.example.androidinterview.presentation.R
@@ -76,7 +77,7 @@ class PayoutViewModel @Inject constructor(
     }
 
     fun onBiometricNotEnrolled() {
-        _uiState.value = PayoutUiState.Error(context.getString(R.string.error_biometric_not_enrolled))
+        _uiState.value = PayoutUiState.Error.Generic(context.getString(R.string.error_biometric_not_enrolled))
     }
 
     private fun submitPayout(amountPence: Int, currency: Currency, iban: String) {
@@ -90,13 +91,15 @@ class PayoutViewModel @Inject constructor(
                         iban = payout.iban,
                     )
                 }
-                .onFailure {
-                    _uiState.value = PayoutUiState.Error(it.message ?: context.getString(R.string.error_something_went_wrong))
+                .onFailure { t ->
+                    _uiState.value = when (t) {
+                        is PayoutException.InsufficientFunds  -> PayoutUiState.Error.InsufficientFunds(t.message!!)
+                        is PayoutException.ServiceUnavailable -> PayoutUiState.Error.ServiceUnavailable(t.message!!)
+                        else -> PayoutUiState.Error.Generic(t.message ?: context.getString(R.string.error_something_went_wrong))
+                    }
                 }
         }
     }
-
-    fun onCancel() { _uiState.value = PayoutUiState.Idle }
 
     fun onReset() {
         amountInput.value = ""

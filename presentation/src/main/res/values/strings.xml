@@ -20,6 +20,9 @@
     <string name="error_something_went_wrong">Something went wrong</string>
     <string name="error_unknown">Unknown error</string>
     <string name="error_biometric_not_enrolled">Please set up biometrics in your device settings to authorise this payment.</string>
+    <string name="error_payout_title">Unable to Process Payout</string>
+    <string name="error_insufficient_funds">Insufficient funds.</string>
+    <string name="error_service_unavailable">Service temporarily unavailable. Please try again later.</string>
 
     <!-- Date group labels -->
     <string name="date_today">Today</string>
@@ -48,4 +51,5 @@
     <string name="payout_success_title">Payout Completed</string>
     <string name="payout_success_message">Your payout of %1$s has been processed successfully.</string>
     <string name="payout_create_another">Create Another Payout</string>
+    <string name="payout_edit">Edit Payout</string>
 </resources>

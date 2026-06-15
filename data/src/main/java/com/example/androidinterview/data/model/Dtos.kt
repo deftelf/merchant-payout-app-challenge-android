@@ -82,3 +82,9 @@ internal data class MerchantDto(
     @SerialName("currency") val currency: CurrencyDto,
     @SerialName("activity") val activity: List<ActivityItemDto>,
 )
+
+@Serializable
+internal data class ErrorResponseDto(
+    @SerialName("error") val error: String,
+    @SerialName("code") val code: String,
+)
