@@ -1,10 +1,17 @@
 package com.example.androidinterview.data.model
 
 import com.example.androidinterview.domain.model.Activity
+import com.example.androidinterview.domain.model.ActivityPage
 import com.example.androidinterview.domain.model.ActivityStatus
 import com.example.androidinterview.domain.model.ActivityType
 import com.example.androidinterview.domain.model.Currency
 import com.example.androidinterview.domain.model.Merchant
+
+internal fun PaginatedActivityResponseDto.toDomain() = ActivityPage(
+    items = items.map { it.toDomain() },
+    nextCursor = nextCursor,
+    hasMore = hasMore,
+)
 
 internal fun MerchantDto.toDomain() = Merchant(
     availableBalance = availableBalance,

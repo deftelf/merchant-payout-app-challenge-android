@@ -38,6 +38,13 @@ internal data class ActivityItemDto(
 )
 
 @Serializable
+internal data class PaginatedActivityResponseDto(
+    @SerialName("items") val items: List<ActivityItemDto>,
+    @SerialName("next_cursor") val nextCursor: String?,
+    @SerialName("has_more") val hasMore: Boolean,
+)
+
+@Serializable
 internal data class MerchantDto(
     @SerialName("available_balance") val availableBalance: Int,
     @SerialName("pending_balance") val pendingBalance: Int,

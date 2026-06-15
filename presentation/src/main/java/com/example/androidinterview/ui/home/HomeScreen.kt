@@ -1,7 +1,5 @@
 package com.example.androidinterview.ui.home
 
-import android.R
-import android.widget.Button
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,7 +18,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -30,11 +27,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.androidinterview.domain.model.Merchant
-
 @Composable
 fun HomeScreen(
-    onShowMore: (Merchant) -> Unit,
+    onShowMore: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
@@ -46,7 +41,7 @@ fun HomeScreen(
         is HomeUiState.Success -> MerchantContent(
             modifier = modifier,
             data = state.data,
-            onShowMore = { onShowMore(state.merchant) },
+            onShowMore = onShowMore,
         )
     }
 }

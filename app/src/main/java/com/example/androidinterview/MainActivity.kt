@@ -85,17 +85,14 @@ class MainActivity : ComponentActivity() {
                                 when (selectedTab) {
                                     Tab.Home -> HomeScreen(
                                         modifier = Modifier.padding(padding),
-                                        onShowMore = { merchant ->
-                                            backStack.add(RecentActivityDestination(merchant))
-                                        },
+                                        onShowMore = { backStack.add(RecentActivityDestination) },
                                     )
                                     Tab.Payout -> PayoutScreen(modifier = Modifier.padding(padding))
                                 }
                             }
                         }
-                        entry<RecentActivityDestination> { key ->
+                        entry<RecentActivityDestination> {
                             RecentActivityScreen(
-                                merchant = key.merchant,
                                 onBack = { backStack.removeLastOrNull() },
                             )
                         }

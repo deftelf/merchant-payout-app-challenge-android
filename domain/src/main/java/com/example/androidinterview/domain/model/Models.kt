@@ -24,3 +24,9 @@ data class Activity(
 @Serializable enum class Currency { GBP, EUR }
 @Serializable enum class ActivityType { PAYOUT, DEPOSIT, REFUND, FEE }
 @Serializable enum class ActivityStatus { COMPLETED, PENDING, PROCESSING, FAILED }
+
+data class ActivityPage(
+    val items: List<Activity>,
+    val nextCursor: String?,
+    val hasMore: Boolean,
+)

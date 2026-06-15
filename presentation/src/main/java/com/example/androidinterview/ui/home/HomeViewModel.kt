@@ -35,7 +35,7 @@ class HomeViewModel @Inject constructor(
                 when {
                     networkError != null -> HomeUiState.Error(networkError)
                     merchant == null -> HomeUiState.Loading
-                    else -> HomeUiState.Success(data = uiModelMapper(merchant), merchant = merchant)
+                    else -> HomeUiState.Success(data = uiModelMapper(merchant))
                 }
             }.collect {
                 _uiState.value = it

@@ -1,11 +1,21 @@
 package com.example.androidinterview.ui.activity
 
 sealed class RecentActivityUiState {
-    data class Success(val items: List<Item>) : RecentActivityUiState() {
+    object Loading : RecentActivityUiState()
+    data class Error(val message: String) : RecentActivityUiState()
+    data class Success(
+        val groups: List<ActivityGroup>,
+        val isLoadingMore: Boolean = false,
+        val hasMore: Boolean = true,
+    ) : RecentActivityUiState() {
+        data class ActivityGroup(val label: String, val items: List<Item>)
         data class Item(
             val description: String,
+            val type: String,
             val value: String,
             val valueNegative: Boolean,
+            val date: String,
+            val status: String,
         )
     }
 }
