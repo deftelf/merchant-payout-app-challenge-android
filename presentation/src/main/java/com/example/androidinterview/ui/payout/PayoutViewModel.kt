@@ -8,6 +8,7 @@ import com.example.androidinterview.domain.model.Payout
 import com.example.androidinterview.domain.model.PayoutException
 import com.example.androidinterview.domain.repository.PayoutRepository
 import com.example.androidinterview.domain.util.IbanUtils
+import com.example.androidinterview.domain.util.anonymised
 import com.example.androidinterview.domain.util.formatAmount
 import com.example.androidinterview.presentation.R
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -63,13 +64,13 @@ class PayoutViewModel @Inject constructor(
                     ph == Phase.CONFIRMING && data != null -> PayoutUiState.Confirming(
                         formattedAmount = data.formattedAmount,
                         currency = data.currency,
-                        iban = data.iban,
+                        iban = data.iban.anonymised(),
                         amountPence = data.amountPence,
                     )
                     ph == Phase.AWAITING_BIOMETRIC && data != null -> PayoutUiState.AwaitingBiometric(
                         formattedAmount = data.formattedAmount,
                         currency = data.currency,
-                        iban = data.iban,
+                        iban = data.iban.anonymised(),
                         amountPence = data.amountPence,
                     )
                     ph == Phase.SUBMITTING -> PayoutUiState.Submitting
