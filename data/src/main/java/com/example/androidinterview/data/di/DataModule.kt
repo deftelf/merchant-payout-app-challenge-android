@@ -1,7 +1,9 @@
 package com.example.androidinterview.data.di
 
 import com.example.androidinterview.data.repository.MerchantRepositoryImpl
+import com.example.androidinterview.data.repository.PayoutRepositoryImpl
 import com.example.androidinterview.domain.repository.MerchantRepository
+import com.example.androidinterview.domain.repository.PayoutRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -18,6 +20,10 @@ abstract class DataModule {
     @Binds
     @Singleton
     internal abstract fun bindMerchantRepository(impl: MerchantRepositoryImpl): MerchantRepository
+
+    @Binds
+    @Singleton
+    internal abstract fun bindPayoutRepository(impl: PayoutRepositoryImpl): PayoutRepository
 
     companion object {
         @Provides

@@ -30,3 +30,14 @@ data class ActivityPage(
     val nextCursor: String?,
     val hasMore: Boolean,
 )
+
+enum class PayoutStatus { PENDING, PROCESSING, COMPLETED, FAILED }
+
+data class Payout(
+    val id: String,
+    val status: PayoutStatus,
+    val amount: Int,
+    val currency: Currency,
+    val iban: String,
+    val createdAt: String,
+)

@@ -38,6 +38,37 @@ internal data class ActivityItemDto(
 )
 
 @Serializable
+internal enum class PayoutStatusDto {
+    @SerialName("pending") PENDING,
+    @SerialName("processing") PROCESSING,
+    @SerialName("completed") COMPLETED,
+    @SerialName("failed") FAILED,
+}
+
+@Serializable
+internal data class PayoutRequestDto(
+    @SerialName("amount") val amount: Int,
+    @SerialName("currency") val currency: CurrencyDto,
+    @SerialName("iban") val iban: String,
+    @SerialName("device_id") val deviceId: String? = null,
+)
+
+@Serializable
+internal data class PayoutResponseDto(
+    @SerialName("id") val id: String,
+    @SerialName("status") val status: PayoutStatusDto,
+    @SerialName("amount") val amount: Int,
+    @SerialName("currency") val currency: CurrencyDto,
+    @SerialName("iban") val iban: String,
+    @SerialName("created_at") val createdAt: String,
+)
+
+@Serializable
+internal data class DeviceResponseDto(
+    @SerialName("device_id") val deviceId: String,
+)
+
+@Serializable
 internal data class PaginatedActivityResponseDto(
     @SerialName("items") val items: List<ActivityItemDto>,
     @SerialName("next_cursor") val nextCursor: String?,

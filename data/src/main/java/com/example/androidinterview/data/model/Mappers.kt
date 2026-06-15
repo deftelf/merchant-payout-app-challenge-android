@@ -6,6 +6,8 @@ import com.example.androidinterview.domain.model.ActivityStatus
 import com.example.androidinterview.domain.model.ActivityType
 import com.example.androidinterview.domain.model.Currency
 import com.example.androidinterview.domain.model.Merchant
+import com.example.androidinterview.domain.model.Payout
+import com.example.androidinterview.domain.model.PayoutStatus
 
 internal fun PaginatedActivityResponseDto.toDomain() = ActivityPage(
     items = items.map { it.toDomain() },
@@ -47,4 +49,25 @@ internal fun ActivityStatusDto.toDomain() = when (this) {
     ActivityStatusDto.PENDING    -> ActivityStatus.PENDING
     ActivityStatusDto.PROCESSING -> ActivityStatus.PROCESSING
     ActivityStatusDto.FAILED     -> ActivityStatus.FAILED
+}
+
+internal fun Currency.toDto() = when (this) {
+    Currency.GBP -> CurrencyDto.GBP
+    Currency.EUR -> CurrencyDto.EUR
+}
+
+internal fun PayoutResponseDto.toDomain() = Payout(
+    id = id,
+    status = status.toDomain(),
+    amount = amount,
+    currency = currency.toDomain(),
+    iban = iban,
+    createdAt = createdAt,
+)
+
+internal fun PayoutStatusDto.toDomain() = when (this) {
+    PayoutStatusDto.PENDING    -> PayoutStatus.PENDING
+    PayoutStatusDto.PROCESSING -> PayoutStatus.PROCESSING
+    PayoutStatusDto.COMPLETED  -> PayoutStatus.COMPLETED
+    PayoutStatusDto.FAILED     -> PayoutStatus.FAILED
 }
