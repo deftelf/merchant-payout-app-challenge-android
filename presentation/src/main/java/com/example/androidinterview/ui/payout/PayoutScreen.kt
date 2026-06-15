@@ -9,12 +9,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,9 +35,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.LineBreak
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -54,7 +59,7 @@ fun PayoutScreen(
 
     Box(modifier = modifier.fillMaxSize()) {
         when (val state = uiState) {
-            is PayoutUiState.Idle -> PayoutForm(
+            is PayoutUiState.Idle, is PayoutUiState.Confirming -> PayoutForm(
                 amountInput = amountInput,
                 currency = currency,
                 ibanInput = ibanInput,
@@ -64,24 +69,43 @@ fun PayoutScreen(
                 onIbanChange = { viewModel.ibanInput.value = it.uppercase() },
                 onRequestPayout = viewModel::onRequestPayout,
             )
-            is PayoutUiState.Confirming -> ConfirmationContent(
-                state = state,
-                onConfirm = viewModel::onConfirm,
-                onCancel = viewModel::onCancel,
-            )
+
             is PayoutUiState.Submitting -> Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center,
             ) {
                 CircularProgressIndicator()
             }
+
             is PayoutUiState.Success -> SuccessContent(
                 state = state,
                 onDone = viewModel::onReset,
             )
+
             is PayoutUiState.Error -> ErrorContent(
                 state = state,
                 onRetry = viewModel::onRetry,
+            )
+        }
+
+        if (uiState is PayoutUiState.Confirming) {
+            val state = uiState as PayoutUiState.Confirming
+            AlertDialog(
+                onDismissRequest = viewModel::onCancel,
+                title = { Text("Confirm Payout") },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        SummaryRow(label = "Amount", value = state.formattedAmount)
+                        SummaryRow(label = "Currency", value = state.currency.name)
+                        SummaryRow(label = "IBAN", value = state.iban)
+                    }
+                },
+                confirmButton = {
+                    Button(onClick = viewModel::onConfirm) { Text("Confirm") }
+                },
+                dismissButton = {
+                    TextButton(onClick = viewModel::onCancel) { Text("Cancel") }
+                },
             )
         }
     }
@@ -108,44 +132,52 @@ private fun PayoutForm(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Spacer(Modifier.height(8.dp))
-        Text("Send Payout", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        Text(
+            "Send Payout",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold
+        )
         Spacer(Modifier.height(4.dp))
 
-        OutlinedTextField(
-            value = amountInput,
-            onValueChange = onAmountChange,
-            label = { Text("Amount") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-            singleLine = true,
-        )
-
-        ExposedDropdownMenuBox(
-            expanded = currencyExpanded,
-            onExpandedChange = { currencyExpanded = it },
-        ) {
+        Row(Modifier.fillMaxWidth()) {
             OutlinedTextField(
-                value = currency.name,
-                onValueChange = {},
-                readOnly = true,
-                label = { Text("Currency") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = currencyExpanded) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .menuAnchor(MenuAnchorType.PrimaryNotEditable),
+                value = amountInput,
+                onValueChange = onAmountChange,
+                label = { Text("Amount") },
+                modifier = Modifier.weight(0.7f),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                singleLine = true,
             )
-            ExposedDropdownMenu(
+
+            Spacer(Modifier.width(8.dp))
+            ExposedDropdownMenuBox(
                 expanded = currencyExpanded,
-                onDismissRequest = { currencyExpanded = false },
+                onExpandedChange = { currencyExpanded = it },
+                modifier = Modifier.weight(0.3f)
             ) {
-                Currency.entries.forEach { option ->
-                    DropdownMenuItem(
-                        text = { Text(option.name) },
-                        onClick = {
-                            onCurrencyChange(option)
-                            currencyExpanded = false
-                        },
-                    )
+                OutlinedTextField(
+                    value = currency.name,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Currency") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = currencyExpanded) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(MenuAnchorType.PrimaryNotEditable),
+                )
+                ExposedDropdownMenu(
+                    expanded = currencyExpanded,
+                    onDismissRequest = { currencyExpanded = false },
+                ) {
+                    Currency.entries.forEach { option ->
+                        DropdownMenuItem(
+                            text = { Text(option.name) },
+                            onClick = {
+                                onCurrencyChange(option)
+                                currencyExpanded = false
+                            },
+                        )
+                    }
                 }
             }
         }
@@ -158,55 +190,21 @@ private fun PayoutForm(
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters),
             singleLine = true,
         )
+        Text(
+            "Enter the destination bank account IBAN",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.secondary
+        )
 
         Spacer(Modifier.weight(1f))
 
         Button(
             onClick = onRequestPayout,
             enabled = isFormValid,
+            shape = RoundedCornerShape(8.dp),
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Text("Request Payout")
-        }
-    }
-}
-
-@Composable
-private fun ConfirmationContent(
-    state: PayoutUiState.Confirming,
-    onConfirm: () -> Unit,
-    onCancel: () -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-    ) {
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        ) {
-            Column(modifier = Modifier.padding(20.dp)) {
-                Text(
-                    text = "Confirm Payout",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                )
-                Spacer(Modifier.height(16.dp))
-                SummaryRow(label = "Amount", value = state.formattedAmount)
-                Spacer(Modifier.height(8.dp))
-                SummaryRow(label = "Currency", value = state.currency.name)
-                Spacer(Modifier.height(8.dp))
-                SummaryRow(label = "IBAN", value = state.iban)
-            }
-        }
-        Spacer(Modifier.height(24.dp))
-        Button(onClick = onConfirm, modifier = Modifier.fillMaxWidth()) {
             Text("Confirm")
-        }
-        TextButton(onClick = onCancel, modifier = Modifier.fillMaxWidth()) {
-            Text("Cancel")
         }
     }
 }
@@ -217,8 +215,16 @@ private fun SummaryRow(label: String, value: String) {
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Text(text = label, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
-        Text(text = value, fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyMedium)
+        Text(
+            text = label,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.bodyMedium
+        )
+        Text(
+            text = value,
+            fontWeight = FontWeight.SemiBold,
+            style = MaterialTheme.typography.bodyMedium
+        )
     }
 }
 
@@ -234,17 +240,30 @@ private fun SuccessContent(state: PayoutUiState.Success, onDone: () -> Unit) {
         Icon(
             imageVector = Icons.Filled.CheckCircle,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(bottom = 16.dp),
+            tint = Color.Green,
+            modifier = Modifier
+                .padding(bottom = 16.dp)
+                .size(40.dp),
         )
-        Text("Payout Sent", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-        Spacer(Modifier.height(8.dp))
-        Text(state.formattedAmount, style = MaterialTheme.typography.titleLarge)
-        Spacer(Modifier.height(4.dp))
-        Text(state.iban, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(
+            "Payout Completed",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(Modifier.height(16.dp))
+        Text(
+            "Your payout of ${state.formattedAmount} has been processed successfully.",
+            style = MaterialTheme.typography.titleSmall.copy(lineBreak = LineBreak.Heading),
+            color = MaterialTheme.colorScheme.secondary,
+            textAlign = TextAlign.Center,
+        )
         Spacer(Modifier.height(32.dp))
-        Button(onClick = onDone, modifier = Modifier.fillMaxWidth()) {
-            Text("Done")
+        Button(
+            onClick = onDone,
+            shape = RoundedCornerShape(8.dp),
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        ) {
+            Text("Create Another Payout")
         }
     }
 }
