@@ -46,6 +46,7 @@ class PayoutViewModelTest {
     fun `onConfirm transitions to AwaitingBiometric when amount is exactly the threshold`() {
         putViewModelInConfirmingState(amountPence = 100_000)
         viewModel.onConfirm()
+        testDispatcher.scheduler.advanceUntilIdle()
         assertTrue(viewModel.uiState.value is PayoutUiState.AwaitingBiometric)
     }
 
@@ -53,15 +54,17 @@ class PayoutViewModelTest {
     fun `onConfirm transitions to AwaitingBiometric when amount exceeds the threshold`() {
         putViewModelInConfirmingState(amountPence = 100_001)
         viewModel.onConfirm()
+        testDispatcher.scheduler.advanceUntilIdle()
         assertTrue(viewModel.uiState.value is PayoutUiState.AwaitingBiometric)
     }
 
     @Test
-    fun `onConfirm submits directly when amount is below the threshold`() {
+    fun `onConfirm bypasses biometric and reaches Success when amount is below the threshold`() {
         coEvery { repository.createPayout(any(), any(), any()) } returns Result.success(fakePayout())
         putViewModelInConfirmingState(amountPence = 99_999)
         viewModel.onConfirm()
-        assertTrue(viewModel.uiState.value is PayoutUiState.Submitting)
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertTrue(viewModel.uiState.value is PayoutUiState.Success)
     }
 
     // endregion

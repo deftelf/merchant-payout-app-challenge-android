@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.androidinterview.domain.model.Currency
+import com.example.androidinterview.domain.model.Payout
 import com.example.androidinterview.domain.model.PayoutException
 import com.example.androidinterview.domain.repository.PayoutRepository
 import com.example.androidinterview.domain.util.IbanUtils
@@ -38,77 +39,116 @@ class PayoutViewModel @Inject constructor(
         amount.toDoubleOrNull()?.let { it > 0 } == true && IbanUtils.isValidIban(iban)
     }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
+    private enum class Phase { IDLE, CONFIRMING, AWAITING_BIOMETRIC, SUBMITTING, DONE }
+
+    private data class PayoutData(
+        val amountPence: Int,
+        val currency: Currency,
+        val iban: String,
+        val formattedAmount: String,
+    )
+
+    private val phase = MutableStateFlow(Phase.IDLE)
+    private val payoutData = MutableStateFlow<PayoutData?>(null)
+    private val doneResult = MutableStateFlow<Result<Payout>?>(null)
+
+    init {
+        generateUi()
+    }
+
+    private fun generateUi() {
+        viewModelScope.launch {
+            combine(phase, payoutData, doneResult) { ph, data, result ->
+                when {
+                    ph == Phase.CONFIRMING && data != null -> PayoutUiState.Confirming(
+                        formattedAmount = data.formattedAmount,
+                        currency = data.currency,
+                        iban = data.iban,
+                        amountPence = data.amountPence,
+                    )
+                    ph == Phase.AWAITING_BIOMETRIC && data != null -> PayoutUiState.AwaitingBiometric(
+                        formattedAmount = data.formattedAmount,
+                        currency = data.currency,
+                        iban = data.iban,
+                        amountPence = data.amountPence,
+                    )
+                    ph == Phase.SUBMITTING -> PayoutUiState.Submitting
+                    ph == Phase.DONE && result != null -> result.fold(
+                        onSuccess = { payout ->
+                            PayoutUiState.Success(
+                                formattedAmount = formatAmount(payout.currency, payout.amount),
+                                currency = payout.currency,
+                                iban = payout.iban,
+                            )
+                        },
+                        onFailure = { t ->
+                            when (t) {
+                                is PayoutException.InsufficientFunds  -> PayoutUiState.Error.InsufficientFunds(t.message ?: "")
+                                is PayoutException.ServiceUnavailable -> PayoutUiState.Error.ServiceUnavailable(t.message ?: "")
+                                else -> PayoutUiState.Error.Generic(t.message ?: context.getString(R.string.error_something_went_wrong))
+                            }
+                        },
+                    )
+                    else -> PayoutUiState.Idle
+                }
+            }.collect { _uiState.value = it }
+        }
+    }
+
     fun onRequestPayout() {
         val pence = ((amountInput.value.toDoubleOrNull() ?: return) * 100).roundToInt()
-        _uiState.value = PayoutUiState.Confirming(
-            formattedAmount = formatAmount(currency.value, pence),
+        payoutData.value = PayoutData(
+            amountPence = pence,
             currency = currency.value,
             iban = ibanInput.value,
-            amountPence = pence,
+            formattedAmount = formatAmount(currency.value, pence),
         )
+        phase.value = Phase.CONFIRMING
     }
 
     fun onConfirm() {
-        val state = _uiState.value as? PayoutUiState.Confirming ?: return
-        if (state.amountPence >= 100_000) {
-            _uiState.value = PayoutUiState.AwaitingBiometric(
-                formattedAmount = state.formattedAmount,
-                currency = state.currency,
-                iban = state.iban,
-                amountPence = state.amountPence,
-            )
+        val data = payoutData.value ?: return
+        if (data.amountPence >= 100_000) {
+            phase.value = Phase.AWAITING_BIOMETRIC
         } else {
-            submitPayout(state.amountPence, state.currency, state.iban)
+            submitPayout(data)
         }
     }
 
     fun onBiometricSuccess() {
-        val state = _uiState.value as? PayoutUiState.AwaitingBiometric ?: return
-        submitPayout(state.amountPence, state.currency, state.iban)
+        payoutData.value?.let { submitPayout(it) }
     }
 
     fun onBiometricFailure() {
-        val state = _uiState.value as? PayoutUiState.AwaitingBiometric ?: return
-        _uiState.value = PayoutUiState.Confirming(
-            formattedAmount = state.formattedAmount,
-            currency = state.currency,
-            iban = state.iban,
-            amountPence = state.amountPence,
-        )
+        phase.value = Phase.CONFIRMING
     }
 
     fun onBiometricNotEnrolled() {
-        _uiState.value = PayoutUiState.Error.Generic(context.getString(R.string.error_biometric_not_enrolled))
+        doneResult.value = Result.failure(RuntimeException(context.getString(R.string.error_biometric_not_enrolled)))
+        phase.value = Phase.DONE
     }
 
-    private fun submitPayout(amountPence: Int, currency: Currency, iban: String) {
-        _uiState.value = PayoutUiState.Submitting
+    private fun submitPayout(data: PayoutData) {
+        phase.value = Phase.SUBMITTING
         viewModelScope.launch {
-            repository.createPayout(amountPence, currency, iban)
-                .onSuccess { payout ->
-                    _uiState.value = PayoutUiState.Success(
-                        formattedAmount = formatAmount(payout.currency, payout.amount),
-                        currency = payout.currency,
-                        iban = payout.iban,
-                    )
-                }
-                .onFailure { t ->
-                    _uiState.value = when (t) {
-                        is PayoutException.InsufficientFunds  -> PayoutUiState.Error.InsufficientFunds(t.message!!)
-                        is PayoutException.ServiceUnavailable -> PayoutUiState.Error.ServiceUnavailable(t.message!!)
-                        else -> PayoutUiState.Error.Generic(t.message ?: context.getString(R.string.error_something_went_wrong))
-                    }
-                }
+            repository.createPayout(data.amountPence, data.currency, data.iban)
+                .onSuccess { doneResult.value = Result.success(it) ; phase.value = Phase.DONE }
+                .onFailure { doneResult.value = Result.failure(it) ; phase.value = Phase.DONE }
         }
     }
 
     fun onReset() {
+        phase.value = Phase.IDLE
         amountInput.value = ""
         ibanInput.value = ""
         currency.value = Currency.GBP
-        _uiState.value = PayoutUiState.Idle
+        payoutData.value = null
+        doneResult.value = null
     }
 
-    fun onRetry() { _uiState.value = PayoutUiState.Idle }
+    fun onRetry() {
+        phase.value = Phase.IDLE
+        doneResult.value = null
+    }
 }
 

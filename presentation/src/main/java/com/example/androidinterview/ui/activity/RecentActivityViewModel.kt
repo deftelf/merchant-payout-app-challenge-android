@@ -14,6 +14,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -27,54 +28,60 @@ class RecentActivityViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<RecentActivityUiState>(Loading)
     val uiState: StateFlow<RecentActivityUiState> = _uiState.asStateFlow()
 
-    private val loadedItems = mutableListOf<Activity>()
+    private val loadedItems = MutableStateFlow<List<Activity>>(emptyList())
+    private val networkError = MutableStateFlow<String?>(null)
+    private val isInitialLoading = MutableStateFlow(true)
+    private val isLoadingMore = MutableStateFlow(false)
+
     private var nextCursor: String? = null
     private var hasMore = true
-    private var isLoadingMore = false
 
     init {
+        generateUi()
         loadPage(cursor = null, isInitial = true)
     }
 
     fun loadMore() {
-        if (hasMore && !isLoadingMore) loadPage(cursor = nextCursor, isInitial = false)
+        if (hasMore && !isLoadingMore.value) loadPage(cursor = nextCursor, isInitial = false)
     }
 
     fun retry() {
-        loadedItems.clear()
+        loadedItems.value = emptyList()
+        networkError.value = null
         nextCursor = null
         hasMore = true
         loadPage(cursor = null, isInitial = true)
     }
 
-    private fun loadPage(cursor: String?, isInitial: Boolean) {
-        isLoadingMore = true
-        if (isInitial) {
-            _uiState.value = Loading
-        } else {
-            (_uiState.value as? Success)?.let { _uiState.value = it.copy(isLoadingMore = true) }
+    private fun generateUi() {
+        viewModelScope.launch {
+            combine(loadedItems, networkError, isInitialLoading, isLoadingMore) { items, error, initialLoading, loadingMore ->
+                when {
+                    initialLoading -> Loading
+                    error != null  -> Error(error)
+                    else           -> Success(mapper(items), loadingMore, hasMore)
+                }
+            }.collect { _uiState.value = it }
         }
+    }
+
+    private fun loadPage(cursor: String?, isInitial: Boolean) {
+        if (isInitial) isInitialLoading.value = true else isLoadingMore.value = true
         viewModelScope.launch {
             repository.getActivity(cursor = cursor)
                 .onSuccess { page ->
-                    loadedItems.addAll(page.items)
                     nextCursor = page.nextCursor
                     hasMore = page.hasMore
-                    isLoadingMore = false
-                    _uiState.value = Success(
-                        groups = mapper(loadedItems),
-                        isLoadingMore = false,
-                        hasMore = hasMore,
-                    )
+                    loadedItems.value = loadedItems.value + page.items
+                    isInitialLoading.value = false
+                    isLoadingMore.value = false
                 }
                 .onFailure {
-                    isLoadingMore = false
-                    if (loadedItems.isEmpty()) {
-                        _uiState.value = Error(it.message ?: context.getString(R.string.error_something_went_wrong))
+                    if (loadedItems.value.isEmpty()) {
+                        networkError.value = it.message ?: context.getString(R.string.error_something_went_wrong)
+                        isInitialLoading.value = false
                     } else {
-                        (_uiState.value as? Success)?.let { s ->
-                            _uiState.value = s.copy(isLoadingMore = false)
-                        }
+                        isLoadingMore.value = false
                     }
                 }
         }

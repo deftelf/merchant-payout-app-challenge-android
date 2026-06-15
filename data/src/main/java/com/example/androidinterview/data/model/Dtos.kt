@@ -1,5 +1,7 @@
+@file:SuppressLint("UnsafeOptInUsageError") // Bug in Kotlin showing incorrect errors
 package com.example.androidinterview.data.model
 
+import android.annotation.SuppressLint
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
