@@ -1,5 +1,6 @@
 package com.example.androidinterview.data.repository
 
+import com.example.androidinterview.data.device.DeviceIdProvider
 import com.example.androidinterview.data.di.IoDispatcher
 import com.example.androidinterview.data.model.PayoutRequestDto
 import com.example.androidinterview.data.model.toDomain
@@ -14,6 +15,7 @@ import javax.inject.Inject
 
 internal class PayoutRepositoryImpl @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+    private val deviceIdProvider: DeviceIdProvider,
 ) : PayoutRepository {
 
     private val api = RetrofitClient.merchantApi
@@ -21,7 +23,7 @@ internal class PayoutRepositoryImpl @Inject constructor(
     override suspend fun createPayout(amount: Int, currency: Currency, iban: String): Result<Payout> =
         withContext(ioDispatcher) {
             runCatching {
-                val deviceId = runCatching { api.getDevice().deviceId }.getOrNull()
+                val deviceId = deviceIdProvider.getDeviceId()
                 api.createPayout(
                     PayoutRequestDto(
                         amount = amount,
