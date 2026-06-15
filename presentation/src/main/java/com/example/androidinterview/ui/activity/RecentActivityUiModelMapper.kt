@@ -6,12 +6,12 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ActivityUiModelMapper @Inject constructor() {
+class RecentActivityUiModelMapper @Inject constructor() {
 
-    operator fun invoke(merchant: Merchant): ActivityUiState.Success {
-        return ActivityUiState.Success(
+    operator fun invoke(merchant: Merchant): RecentActivityUiState.Success {
+        return RecentActivityUiState.Success(
             items = merchant.activity.map {
-                ActivityUiState.Success.Item(
+                RecentActivityUiState.Success.Item(
                     description = it.description,
                     value = formatAmount(it.currency, it.amount),
                     valueNegative = it.amount < 0,

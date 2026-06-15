@@ -10,16 +10,16 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-@HiltViewModel(assistedFactory = ActivityViewModelFactory::class)
-class ActivityViewModel @AssistedInject constructor(
+@HiltViewModel(assistedFactory = RecentActivityViewModelFactory::class)
+class RecentActivityViewModel @AssistedInject constructor(
     @Assisted merchant: Merchant,
-    mapper: ActivityUiModelMapper,
+    mapper: RecentActivityUiModelMapper,
 ) : ViewModel() {
 
-    val uiState: StateFlow<ActivityUiState> = MutableStateFlow(mapper(merchant)).asStateFlow()
+    val uiState: StateFlow<RecentActivityUiState> = MutableStateFlow(mapper(merchant)).asStateFlow()
 }
 
 @AssistedFactory
-interface ActivityViewModelFactory {
-    fun create(merchant: Merchant): ActivityViewModel
+interface RecentActivityViewModelFactory {
+    fun create(merchant: Merchant): RecentActivityViewModel
 }

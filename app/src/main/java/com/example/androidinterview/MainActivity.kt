@@ -26,9 +26,9 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import com.example.androidinterview.ui.ActivityDestination
 import com.example.androidinterview.ui.HomeDestination
-import com.example.androidinterview.ui.activity.ActivityScreen
+import com.example.androidinterview.ui.RecentActivityDestination
+import com.example.androidinterview.ui.activity.RecentActivityScreen
 import com.example.androidinterview.ui.home.HomeScreen
 import com.example.androidinterview.ui.payout.PayoutScreen
 import com.example.androidinterview.ui.theme.AndroidInterviewTheme
@@ -86,15 +86,15 @@ class MainActivity : ComponentActivity() {
                                     Tab.Home -> HomeScreen(
                                         modifier = Modifier.padding(padding),
                                         onShowMore = { merchant ->
-                                            backStack.add(ActivityDestination(merchant))
+                                            backStack.add(RecentActivityDestination(merchant))
                                         },
                                     )
                                     Tab.Payout -> PayoutScreen(modifier = Modifier.padding(padding))
                                 }
                             }
                         }
-                        entry<ActivityDestination> { key ->
-                            ActivityScreen(
+                        entry<RecentActivityDestination> { key ->
+                            RecentActivityScreen(
                                 merchant = key.merchant,
                                 onBack = { backStack.removeLastOrNull() },
                             )

@@ -32,22 +32,22 @@ import com.example.androidinterview.domain.model.Merchant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ActivityScreen(
+fun RecentActivityScreen(
     merchant: Merchant,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: ActivityViewModel = hiltViewModel<ActivityViewModel, ActivityViewModelFactory>(
+    viewModel: RecentActivityViewModel = hiltViewModel<RecentActivityViewModel, RecentActivityViewModelFactory>(
         creationCallback = { factory -> factory.create(merchant) },
     ),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val items = (uiState as? ActivityUiState.Success)?.items.orEmpty()
+    val items = (uiState as? RecentActivityUiState.Success)?.items.orEmpty()
 
     Scaffold(
         modifier = modifier,
         topBar = {
             TopAppBar(
-                title = { Text("All Activity") },
+                title = { Text("Recent Activity") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -72,7 +72,7 @@ fun ActivityScreen(
 }
 
 @Composable
-private fun ActivityRow(item: ActivityUiState.Success.Item) {
+private fun ActivityRow(item: RecentActivityUiState.Success.Item) {
     val amountColor = if (item.valueNegative) MaterialTheme.colorScheme.error else Color(0xFF2E7D32)
     Row(
         modifier = Modifier

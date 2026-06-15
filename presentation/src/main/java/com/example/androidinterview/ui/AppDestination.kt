@@ -8,4 +8,4 @@ import kotlinx.serialization.Serializable
 data object HomeDestination : NavKey
 
 @Serializable
-data class ActivityDestination(val merchant: Merchant) : NavKey
+data class RecentActivityDestination(val merchant: Merchant) : NavKey
