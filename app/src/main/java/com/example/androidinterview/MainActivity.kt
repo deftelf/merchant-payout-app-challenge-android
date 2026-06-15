@@ -1,7 +1,8 @@
 package com.example.androidinterview
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import android.view.WindowManager
+import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,15 +10,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowCircleUp
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Payments
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -55,6 +59,34 @@ class MainActivity : FragmentActivity() {
                     entryProvider = entryProvider {
                         entry<HomeDestination> {
                             var selectedTab by rememberSaveable { mutableStateOf(Tab.Home) }
+                            val showScreenshotWarning = remember { mutableStateOf(false) }
+                            val activity = LocalActivity.current as FragmentActivity
+                            DisposableEffect(selectedTab) {
+                                val screenshotCallback = if (selectedTab == Tab.Payout) {
+                                    activity.window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                                    val cb = ScreenCaptureCallback {
+                                        showScreenshotWarning.value = true
+                                    }
+                                    activity.registerScreenCaptureCallback(activity.mainExecutor, cb)
+                                    cb
+                                } else null
+                                onDispose {
+                                    activity.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                                    screenshotCallback?.let { activity.unregisterScreenCaptureCallback(it) }
+                                }
+                            }
+                            if (showScreenshotWarning.value) {
+                                AlertDialog(
+                                    onDismissRequest = { showScreenshotWarning.value = false },
+                                    title = { Text("Security Reminder") },
+                                    text = { Text("Please keep your financial data private. Screenshots may contain sensitive information.") },
+                                    confirmButton = {
+                                        TextButton(onClick = { showScreenshotWarning.value = false }) {
+                                            Text("OK")
+                                        }
+                                    },
+                                )
+                            }
                             Scaffold(
                                 modifier = Modifier.fillMaxSize(),
                                 bottomBar = {
