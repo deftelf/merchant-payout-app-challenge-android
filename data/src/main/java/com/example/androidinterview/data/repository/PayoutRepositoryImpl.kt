@@ -6,7 +6,7 @@ import com.example.androidinterview.data.model.ErrorResponseDto
 import com.example.androidinterview.data.model.PayoutRequestDto
 import com.example.androidinterview.data.model.toDomain
 import com.example.androidinterview.data.model.toDto
-import com.example.androidinterview.data.network.RetrofitClient
+import com.example.androidinterview.data.network.MerchantApi
 import com.example.androidinterview.domain.model.Currency
 import com.example.androidinterview.domain.model.Payout
 import com.example.androidinterview.domain.model.PayoutException
@@ -22,9 +22,8 @@ private val errorJson = Json { ignoreUnknownKeys = true }
 internal class PayoutRepositoryImpl @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     private val deviceIdProvider: DeviceIdProvider,
+    private val api: MerchantApi,
 ) : PayoutRepository {
-
-    private val api = RetrofitClient.merchantApi
 
     override suspend fun createPayout(amount: Int, currency: Currency, iban: String): Result<Payout> =
         withContext(ioDispatcher) {

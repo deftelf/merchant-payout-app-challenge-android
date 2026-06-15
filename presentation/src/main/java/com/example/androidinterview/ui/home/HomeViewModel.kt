@@ -9,9 +9,10 @@ import com.example.androidinterview.presentation.R
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -22,29 +23,19 @@ class HomeViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
-    val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
-
     private val merchant = MutableStateFlow<Merchant?>(null)
     private val networkError = MutableStateFlow<String?>(null)
 
+    val uiState: StateFlow<HomeUiState> = combine(merchant, networkError) { merchant, networkError ->
+        when {
+            networkError != null -> HomeUiState.Error(networkError)
+            merchant == null     -> HomeUiState.Loading
+            else                 -> HomeUiState.Success(data = uiModelMapper(merchant))
+        }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, HomeUiState.Loading)
+
     init {
         loadData()
-        generateUi()
-    }
-
-    fun generateUi() {
-        viewModelScope.launch {
-            combine(merchant, networkError) { merchant, networkError ->
-                when {
-                    networkError != null -> HomeUiState.Error(networkError)
-                    merchant == null -> HomeUiState.Loading
-                    else -> HomeUiState.Success(data = uiModelMapper(merchant))
-                }
-            }.collect {
-                _uiState.value = it
-            }
-        }
     }
 
     fun loadData() {

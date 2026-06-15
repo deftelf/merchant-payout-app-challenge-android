@@ -12,9 +12,10 @@ import com.example.androidinterview.ui.activity.RecentActivityUiState.Success
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -25,9 +26,6 @@ class RecentActivityViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<RecentActivityUiState>(Loading)
-    val uiState: StateFlow<RecentActivityUiState> = _uiState.asStateFlow()
-
     private val loadedItems = MutableStateFlow<List<Activity>>(emptyList())
     private val networkError = MutableStateFlow<String?>(null)
     private val isInitialLoading = MutableStateFlow(true)
@@ -36,8 +34,17 @@ class RecentActivityViewModel @Inject constructor(
     private var nextCursor: String? = null
     private var hasMore = true
 
+    val uiState: StateFlow<RecentActivityUiState> = combine(
+        loadedItems, networkError, isInitialLoading, isLoadingMore,
+    ) { items, error, initialLoading, loadingMore ->
+        when {
+            initialLoading -> Loading
+            error != null  -> Error(error)
+            else           -> Success(mapper(items), loadingMore, hasMore)
+        }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, Loading)
+
     init {
-        generateUi()
         loadPage(cursor = null, isInitial = true)
     }
 
@@ -51,18 +58,6 @@ class RecentActivityViewModel @Inject constructor(
         nextCursor = null
         hasMore = true
         loadPage(cursor = null, isInitial = true)
-    }
-
-    private fun generateUi() {
-        viewModelScope.launch {
-            combine(loadedItems, networkError, isInitialLoading, isLoadingMore) { items, error, initialLoading, loadingMore ->
-                when {
-                    initialLoading -> Loading
-                    error != null  -> Error(error)
-                    else           -> Success(mapper(items), loadingMore, hasMore)
-                }
-            }.collect { _uiState.value = it }
-        }
     }
 
     private fun loadPage(cursor: String?, isInitial: Boolean) {
