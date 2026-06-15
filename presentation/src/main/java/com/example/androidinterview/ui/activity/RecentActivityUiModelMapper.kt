@@ -1,13 +1,15 @@
 package com.example.androidinterview.ui.activity
 
-import androidx.compose.material3.MaterialTheme
+import android.content.Context
 import androidx.compose.ui.graphics.Color
 import com.example.androidinterview.domain.model.Activity
 import com.example.androidinterview.domain.model.ActivityStatus
 import com.example.androidinterview.domain.model.ActivityType
 import com.example.androidinterview.domain.util.formatAmount
+import com.example.androidinterview.presentation.R
 import com.example.androidinterview.ui.activity.RecentActivityUiState.Success.ActivityGroup
 import com.example.androidinterview.ui.activity.RecentActivityUiState.Success.Item
+import dagger.hilt.android.qualifiers.ApplicationContext
 import java.time.LocalDate
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -15,8 +17,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class RecentActivityUiModelMapper @Inject constructor() {
-
+class RecentActivityUiModelMapper @Inject constructor(
+    @ApplicationContext private val context: Context,
+) {
     // Spec is unclear, written says "MM" but the reference screenshots are "MMM"
     private val dateFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy")
 
@@ -30,8 +33,8 @@ class RecentActivityUiModelMapper @Inject constructor() {
             .map { (date, items) ->
                 ActivityGroup(
                     label = when (date) {
-                        today -> "Today"
-                        yesterday -> "Yesterday"
+                        today -> context.getString(R.string.date_today)
+                        yesterday -> context.getString(R.string.date_yesterday)
                         else -> date.format(dateFormatter)
                     },
                     items = items.map { activity ->
@@ -49,18 +52,18 @@ class RecentActivityUiModelMapper @Inject constructor() {
                 )
             }
     }
-}
 
-private fun ActivityType.toDisplayString() = when (this) {
-    ActivityType.PAYOUT  -> "Payout"
-    ActivityType.DEPOSIT -> "Deposit"
-    ActivityType.REFUND  -> "Refund"
-    ActivityType.FEE     -> "Fee"
-}
+    private fun ActivityType.toDisplayString() = when (this) {
+        ActivityType.PAYOUT  -> context.getString(R.string.activity_type_payout)
+        ActivityType.DEPOSIT -> context.getString(R.string.activity_type_deposit)
+        ActivityType.REFUND  -> context.getString(R.string.activity_type_refund)
+        ActivityType.FEE     -> context.getString(R.string.activity_type_fee)
+    }
 
-private fun ActivityStatus.toDisplayString() = when (this) {
-    ActivityStatus.COMPLETED  -> "Completed"
-    ActivityStatus.PENDING    -> "Pending"
-    ActivityStatus.PROCESSING -> "Processing"
-    ActivityStatus.FAILED     -> "Failed"
+    private fun ActivityStatus.toDisplayString() = when (this) {
+        ActivityStatus.COMPLETED  -> context.getString(R.string.activity_status_completed)
+        ActivityStatus.PENDING    -> context.getString(R.string.activity_status_pending)
+        ActivityStatus.PROCESSING -> context.getString(R.string.activity_status_processing)
+        ActivityStatus.FAILED     -> context.getString(R.string.activity_status_failed)
+    }
 }

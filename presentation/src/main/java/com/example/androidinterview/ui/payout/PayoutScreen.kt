@@ -40,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -51,6 +52,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.androidinterview.domain.model.Currency
+import com.example.androidinterview.presentation.R
 
 @Composable
 fun PayoutScreen(
@@ -98,19 +100,19 @@ fun PayoutScreen(
             val state = uiState as PayoutUiState.Confirming
             AlertDialog(
                 onDismissRequest = viewModel::onCancel,
-                title = { Text("Confirm Payout") },
+                title = { Text(stringResource(R.string.payout_confirm_dialog_title)) },
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        SummaryRow(label = "Amount", value = state.formattedAmount)
-                        SummaryRow(label = "Currency", value = state.currency.name)
-                        SummaryRow(label = "IBAN", value = state.iban)
+                        SummaryRow(label = stringResource(R.string.payout_field_amount), value = state.formattedAmount)
+                        SummaryRow(label = stringResource(R.string.payout_field_currency), value = state.currency.name)
+                        SummaryRow(label = stringResource(R.string.payout_field_iban), value = state.iban)
                     }
                 },
                 confirmButton = {
-                    Button(onClick = viewModel::onConfirm) { Text("Confirm") }
+                    Button(onClick = viewModel::onConfirm) { Text(stringResource(R.string.confirm)) }
                 },
                 dismissButton = {
-                    TextButton(onClick = viewModel::onCancel) { Text("Cancel") }
+                    TextButton(onClick = viewModel::onCancel) { Text(stringResource(R.string.cancel)) }
                 },
             )
         }
@@ -118,6 +120,9 @@ fun PayoutScreen(
         if (uiState is PayoutUiState.AwaitingBiometric) {
             val state = uiState as PayoutUiState.AwaitingBiometric
             val context = LocalContext.current
+            val title = stringResource(R.string.payout_confirm_dialog_title)
+            val subtitle = stringResource(R.string.payout_biometric_subtitle, state.formattedAmount)
+            val negativeButtonText = stringResource(R.string.cancel)
             LaunchedEffect(state) {
                 val canAuth = BiometricManager.from(context)
                     .canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK)
@@ -139,9 +144,9 @@ fun PayoutScreen(
                     },
                 ).authenticate(
                     BiometricPrompt.PromptInfo.Builder()
-                        .setTitle("Confirm Payout")
-                        .setSubtitle("Verify your identity to send ${state.formattedAmount}")
-                        .setNegativeButtonText("Cancel")
+                        .setTitle(title)
+                        .setSubtitle(subtitle)
+                        .setNegativeButtonText(negativeButtonText)
                         .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_WEAK)
                         .build()
                 )
@@ -172,7 +177,7 @@ private fun PayoutForm(
     ) {
         Spacer(Modifier.height(8.dp))
         Text(
-            "Send Payout",
+            stringResource(R.string.payout_title),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
@@ -182,7 +187,7 @@ private fun PayoutForm(
             OutlinedTextField(
                 value = amountInput,
                 onValueChange = onAmountChange,
-                label = { Text("Amount") },
+                label = { Text(stringResource(R.string.payout_field_amount)) },
                 modifier = Modifier.weight(0.7f),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 singleLine = true,
@@ -198,7 +203,7 @@ private fun PayoutForm(
                     value = currency.name,
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Currency") },
+                    label = { Text(stringResource(R.string.payout_field_currency)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = currencyExpanded) },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -224,13 +229,13 @@ private fun PayoutForm(
         OutlinedTextField(
             value = ibanInput,
             onValueChange = onIbanChange,
-            label = { Text("IBAN") },
+            label = { Text(stringResource(R.string.payout_field_iban)) },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters),
             singleLine = true,
         )
         Text(
-            "Enter the destination bank account IBAN",
+            stringResource(R.string.payout_iban_hint),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.secondary
         )
@@ -243,7 +248,7 @@ private fun PayoutForm(
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Text("Confirm")
+            Text(stringResource(R.string.confirm))
         }
     }
 }
@@ -285,13 +290,13 @@ private fun SuccessContent(state: PayoutUiState.Success, onDone: () -> Unit) {
                 .size(40.dp),
         )
         Text(
-            "Payout Completed",
+            stringResource(R.string.payout_success_title),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
         Spacer(Modifier.height(16.dp))
         Text(
-            "Your payout of ${state.formattedAmount} has been processed successfully.",
+            stringResource(R.string.payout_success_message, state.formattedAmount),
             style = MaterialTheme.typography.titleSmall.copy(lineBreak = LineBreak.Heading),
             color = MaterialTheme.colorScheme.secondary,
             textAlign = TextAlign.Center,
@@ -302,7 +307,7 @@ private fun SuccessContent(state: PayoutUiState.Success, onDone: () -> Unit) {
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
-            Text("Create Another Payout")
+            Text(stringResource(R.string.payout_create_another))
         }
     }
 }
@@ -323,7 +328,7 @@ private fun ErrorContent(state: PayoutUiState.Error, onRetry: () -> Unit) {
         )
         Spacer(Modifier.height(16.dp))
         Button(onClick = onRetry, modifier = Modifier.fillMaxWidth()) {
-            Text("Try Again")
+            Text(stringResource(R.string.try_again))
         }
     }
 }

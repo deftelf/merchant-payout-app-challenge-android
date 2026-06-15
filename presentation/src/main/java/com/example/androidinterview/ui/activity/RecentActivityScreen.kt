@@ -32,10 +32,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.androidinterview.presentation.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,10 +52,10 @@ fun RecentActivityScreen(
         modifier = modifier,
         topBar = {
             TopAppBar(
-                title = { Text("Recent Activity") },
+                title = { Text(stringResource(R.string.recent_activity)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.cd_back))
                     }
                 },
             )
@@ -82,7 +84,7 @@ fun RecentActivityScreen(
                 ) {
                     Text(state.message, style = MaterialTheme.typography.bodyLarge)
                     Spacer(Modifier.height(16.dp))
-                    Button(onClick = viewModel::retry) { Text("Retry") }
+                    Button(onClick = viewModel::retry) { Text(stringResource(R.string.retry)) }
                 }
             }
 
@@ -141,7 +143,7 @@ private fun SuccessContent(
                 ) {
                     CircularProgressIndicator(Modifier.align(Alignment.CenterHorizontally))
                     Text(
-                        "Loading more...",
+                        stringResource(R.string.loading_more),
                         color = MaterialTheme.colorScheme.tertiary,
                         style = MaterialTheme.typography.labelSmall,
                         modifier = Modifier.align(Alignment.CenterHorizontally)

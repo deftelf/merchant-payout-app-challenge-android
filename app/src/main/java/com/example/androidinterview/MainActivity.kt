@@ -26,6 +26,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -78,11 +79,11 @@ class MainActivity : FragmentActivity() {
                             if (showScreenshotWarning.value) {
                                 AlertDialog(
                                     onDismissRequest = { showScreenshotWarning.value = false },
-                                    title = { Text("Security Reminder") },
-                                    text = { Text("Please keep your financial data private. Screenshots may contain sensitive information.") },
+                                    title = { Text(stringResource(R.string.screenshot_warning_title)) },
+                                    text = { Text(stringResource(R.string.screenshot_warning_message)) },
                                     confirmButton = {
                                         TextButton(onClick = { showScreenshotWarning.value = false }) {
-                                            Text("OK")
+                                            Text(stringResource(R.string.ok))
                                         }
                                     },
                                 )
@@ -101,15 +102,15 @@ class MainActivity : FragmentActivity() {
                                         NavigationBarItem(
                                             selected = selectedTab == Tab.Home,
                                             onClick = { selectedTab = Tab.Home },
-                                            icon = { Icon(Icons.Filled.Home, contentDescription = "Home") },
-                                            label = { Text("Home") },
+                                            icon = { Icon(Icons.Filled.Home, contentDescription = stringResource(R.string.tab_home)) },
+                                            label = { Text(stringResource(R.string.tab_home)) },
                                             colors = selectedItemColors,
                                         )
                                         NavigationBarItem(
                                             selected = selectedTab == Tab.Payout,
                                             onClick = { selectedTab = Tab.Payout },
-                                            icon = { Icon(Icons.Filled.ArrowCircleUp, contentDescription = "Payout") },
-                                            label = { Text("Payout") },
+                                            icon = { Icon(Icons.Filled.ArrowCircleUp, contentDescription = stringResource(R.string.tab_payout)) },
+                                            label = { Text(stringResource(R.string.tab_payout)) },
                                             colors = selectedItemColors,
                                         )
                                     }

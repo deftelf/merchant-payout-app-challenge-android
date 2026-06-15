@@ -1,11 +1,14 @@
 package com.example.androidinterview.ui.payout
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.androidinterview.domain.model.Currency
 import com.example.androidinterview.domain.repository.PayoutRepository
 import com.example.androidinterview.domain.util.formatAmount
+import com.example.androidinterview.presentation.R
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -19,6 +22,7 @@ import kotlin.math.roundToInt
 @HiltViewModel
 class PayoutViewModel @Inject constructor(
     private val repository: PayoutRepository,
+    @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
     val amountInput = MutableStateFlow("")
@@ -72,9 +76,7 @@ class PayoutViewModel @Inject constructor(
     }
 
     fun onBiometricNotEnrolled() {
-        _uiState.value = PayoutUiState.Error(
-            "Please set up biometrics in your device settings to authorise this payment."
-        )
+        _uiState.value = PayoutUiState.Error(context.getString(R.string.error_biometric_not_enrolled))
     }
 
     private fun submitPayout(amountPence: Int, currency: Currency, iban: String) {
@@ -89,7 +91,7 @@ class PayoutViewModel @Inject constructor(
                     )
                 }
                 .onFailure {
-                    _uiState.value = PayoutUiState.Error(it.message ?: "Something went wrong")
+                    _uiState.value = PayoutUiState.Error(it.message ?: context.getString(R.string.error_something_went_wrong))
                 }
         }
     }

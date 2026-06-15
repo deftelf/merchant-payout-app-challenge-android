@@ -1,13 +1,16 @@
 package com.example.androidinterview.ui.activity
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.androidinterview.domain.model.Activity
 import com.example.androidinterview.domain.repository.MerchantRepository
+import com.example.androidinterview.presentation.R
 import com.example.androidinterview.ui.activity.RecentActivityUiState.Error
 import com.example.androidinterview.ui.activity.RecentActivityUiState.Loading
 import com.example.androidinterview.ui.activity.RecentActivityUiState.Success
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,6 +21,7 @@ import javax.inject.Inject
 class RecentActivityViewModel @Inject constructor(
     private val repository: MerchantRepository,
     private val mapper: RecentActivityUiModelMapper,
+    @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<RecentActivityUiState>(Loading)
@@ -66,7 +70,7 @@ class RecentActivityViewModel @Inject constructor(
                 .onFailure {
                     isLoadingMore = false
                     if (loadedItems.isEmpty()) {
-                        _uiState.value = Error(it.message ?: "Something went wrong")
+                        _uiState.value = Error(it.message ?: context.getString(R.string.error_something_went_wrong))
                     } else {
                         (_uiState.value as? Success)?.let { s ->
                             _uiState.value = s.copy(isLoadingMore = false)

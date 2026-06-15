@@ -23,10 +23,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.androidinterview.presentation.R
 @Composable
 fun HomeScreen(
     onShowMore: () -> Unit,
@@ -62,7 +64,7 @@ private fun ErrorContent(modifier: Modifier = Modifier, message: String, onRetry
     ) {
         Text(text = message, style = MaterialTheme.typography.bodyLarge)
         Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = onRetry) { Text("Retry") }
+        Button(onClick = onRetry) { Text(stringResource(R.string.retry)) }
     }
 }
 
@@ -78,7 +80,7 @@ private fun MerchantContent(
             .padding(16.dp),
     ) {
         Spacer(modifier = Modifier.height(8.dp))
-        Text("Business Account", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+        Text(stringResource(R.string.home_title), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(20.dp))
         BalanceCard(data = data)
         Spacer(modifier = Modifier.height(24.dp))
@@ -96,19 +98,19 @@ private fun BalanceCard(data: HomeUiState.Success.BusinessData) {
     ) {
         Column {
             Text(
-                text = "Account Balance",
+                text = stringResource(R.string.home_account_balance),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
             )
             Spacer(modifier = Modifier.height(16.dp))
             Row(Modifier.fillMaxWidth()) {
                 BalanceColumn(
-                    label = "Available",
+                    label = stringResource(R.string.home_balance_available),
                     amount = data.balanceAvailable,
                     modifier = Modifier.weight(1f),
                 )
                 BalanceColumn(
-                    label = "Pending",
+                    label = stringResource(R.string.home_balance_pending),
                     amount = data.balancePending,
                     modifier = Modifier.weight(1f),
                 )
@@ -131,7 +133,7 @@ private fun BalanceColumn(label: String, amount: String, modifier: Modifier = Mo
 private fun RecentActivitySection(activity: List<HomeUiState.Success.BusinessData.Line>, onShowMore: () -> Unit) {
     Column {
         Text(
-            text = "Recent Activity",
+            text = stringResource(R.string.recent_activity),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
         )
@@ -150,7 +152,7 @@ private fun RecentActivitySection(activity: List<HomeUiState.Success.BusinessDat
                 contentColor = Color(0xFF1565C0),
             ),
         ) {
-            Text("Show more")
+            Text(stringResource(R.string.home_show_more))
         }
     }
 }

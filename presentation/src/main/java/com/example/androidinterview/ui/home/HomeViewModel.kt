@@ -1,10 +1,13 @@
 package com.example.androidinterview.ui.home
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.androidinterview.domain.model.Merchant
 import com.example.androidinterview.domain.repository.MerchantRepository
+import com.example.androidinterview.presentation.R
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,6 +19,7 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val repo: MerchantRepository,
     private val uiModelMapper: HomeUiModelMapper,
+    @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
@@ -48,7 +52,7 @@ class HomeViewModel @Inject constructor(
             networkError.value = null
             repo.getMerchant()
                 .onSuccess { merchant.value = it }
-                .onFailure { networkError.value = it.message ?: "Unknown error" }
+                .onFailure { networkError.value = it.message ?: context.getString(R.string.error_unknown) }
         }
     }
 }
