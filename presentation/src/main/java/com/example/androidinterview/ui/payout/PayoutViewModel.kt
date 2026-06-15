@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.androidinterview.domain.model.Currency
 import com.example.androidinterview.domain.model.PayoutException
 import com.example.androidinterview.domain.repository.PayoutRepository
+import com.example.androidinterview.domain.util.IbanUtils
 import com.example.androidinterview.domain.util.formatAmount
 import com.example.androidinterview.presentation.R
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -34,7 +35,7 @@ class PayoutViewModel @Inject constructor(
     val uiState: StateFlow<PayoutUiState> = _uiState.asStateFlow()
 
     val isFormValid: StateFlow<Boolean> = combine(amountInput, ibanInput) { amount, iban ->
-        amount.toDoubleOrNull()?.let { it > 0 } == true && isValidIban(iban)
+        amount.toDoubleOrNull()?.let { it > 0 } == true && IbanUtils.isValidIban(iban)
     }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     fun onRequestPayout() {
@@ -111,5 +112,3 @@ class PayoutViewModel @Inject constructor(
     fun onRetry() { _uiState.value = PayoutUiState.Idle }
 }
 
-private fun isValidIban(iban: String): Boolean =
-    iban.matches(Regex("^[A-Z]{2}[0-9]{2}[A-Z0-9]{11,30}$"))
