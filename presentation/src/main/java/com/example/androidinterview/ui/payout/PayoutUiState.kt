@@ -10,6 +10,12 @@ sealed class PayoutUiState {
         val iban: String,
         val amountPence: Int,
     ) : PayoutUiState()
+    data class AwaitingBiometric(
+        val formattedAmount: String,
+        val currency: Currency,
+        val iban: String,
+        val amountPence: Int,
+    ) : PayoutUiState()
     object Submitting : PayoutUiState()
     data class Success(
         val formattedAmount: String,

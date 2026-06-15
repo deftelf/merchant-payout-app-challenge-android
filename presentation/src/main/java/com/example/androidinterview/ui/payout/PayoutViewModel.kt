@@ -44,9 +44,43 @@ class PayoutViewModel @Inject constructor(
 
     fun onConfirm() {
         val state = _uiState.value as? PayoutUiState.Confirming ?: return
+        if (state.amountPence >= 100_000) {
+            _uiState.value = PayoutUiState.AwaitingBiometric(
+                formattedAmount = state.formattedAmount,
+                currency = state.currency,
+                iban = state.iban,
+                amountPence = state.amountPence,
+            )
+        } else {
+            submitPayout(state.amountPence, state.currency, state.iban)
+        }
+    }
+
+    fun onBiometricSuccess() {
+        val state = _uiState.value as? PayoutUiState.AwaitingBiometric ?: return
+        submitPayout(state.amountPence, state.currency, state.iban)
+    }
+
+    fun onBiometricFailure() {
+        val state = _uiState.value as? PayoutUiState.AwaitingBiometric ?: return
+        _uiState.value = PayoutUiState.Confirming(
+            formattedAmount = state.formattedAmount,
+            currency = state.currency,
+            iban = state.iban,
+            amountPence = state.amountPence,
+        )
+    }
+
+    fun onBiometricNotEnrolled() {
+        _uiState.value = PayoutUiState.Error(
+            "Please set up biometrics in your device settings to authorise this payment."
+        )
+    }
+
+    private fun submitPayout(amountPence: Int, currency: Currency, iban: String) {
         _uiState.value = PayoutUiState.Submitting
         viewModelScope.launch {
-            repository.createPayout(state.amountPence, state.currency, state.iban)
+            repository.createPayout(amountPence, currency, iban)
                 .onSuccess { payout ->
                     _uiState.value = PayoutUiState.Success(
                         formattedAmount = formatAmount(payout.currency, payout.amount),

@@ -28,7 +28,10 @@ import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricPrompt
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,12 +39,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.androidinterview.domain.model.Currency
@@ -59,7 +65,7 @@ fun PayoutScreen(
 
     Box(modifier = modifier.fillMaxSize()) {
         when (val state = uiState) {
-            is PayoutUiState.Idle, is PayoutUiState.Confirming -> PayoutForm(
+            is PayoutUiState.Idle, is PayoutUiState.Confirming, is PayoutUiState.AwaitingBiometric -> PayoutForm(
                 amountInput = amountInput,
                 currency = currency,
                 ibanInput = ibanInput,
@@ -107,6 +113,39 @@ fun PayoutScreen(
                     TextButton(onClick = viewModel::onCancel) { Text("Cancel") }
                 },
             )
+        }
+
+        if (uiState is PayoutUiState.AwaitingBiometric) {
+            val state = uiState as PayoutUiState.AwaitingBiometric
+            val context = LocalContext.current
+            LaunchedEffect(state) {
+                val canAuth = BiometricManager.from(context)
+                    .canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK)
+                if (canAuth != BiometricManager.BIOMETRIC_SUCCESS) {
+                    viewModel.onBiometricNotEnrolled()
+                    return@LaunchedEffect
+                }
+                BiometricPrompt(
+                    context as FragmentActivity,
+                    ContextCompat.getMainExecutor(context),
+                    object : BiometricPrompt.AuthenticationCallback() {
+                        override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                            viewModel.onBiometricSuccess()
+                        }
+                        override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                            viewModel.onBiometricFailure()
+                        }
+                        override fun onAuthenticationFailed() {}
+                    },
+                ).authenticate(
+                    BiometricPrompt.PromptInfo.Builder()
+                        .setTitle("Confirm Payout")
+                        .setSubtitle("Verify your identity to send ${state.formattedAmount}")
+                        .setNegativeButtonText("Cancel")
+                        .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_WEAK)
+                        .build()
+                )
+            }
         }
     }
 }
